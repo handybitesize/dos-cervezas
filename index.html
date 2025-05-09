@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dos Cervezas</title>
+    <style>
+        body {
+            font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', sans-serif;
+            background-color: #f0e68c; /* Khaki - a light pub-like wood color */
+            color: #5c3a0a; /* Dark brown */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background-color: #d2b48c; /* Tan - another wood shade */
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2), 0 0 0 10px #8b4513; /* Dark brown border */
+            border: 5px solid #saddlebrown; /* A slightly lighter brown for inner border */
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 3em;
+            color: #800000; /* Maroon/Burgundy */
+            text-shadow: 2px 2px #ffffff; /* White text shadow for pop */
+            margin-bottom: 20px;
+        }
+        
+        .logo-beer {
+            font-size: 2em; /* Adjust as needed */
+            display: inline-block;
+            margin-right: 10px;
+            transform: rotate(-15deg); /* Tilt the beer mug */
+        }
+
+        label {
+            font-size: 1.2em;
+            margin-right: 10px;
+        }
+
+        select, button {
+            font-family: inherit;
+            font-size: 1.1em;
+            padding: 10px 15px;
+            margin: 10px 5px;
+            border-radius: 8px;
+            border: 2px solid #5c3a0a;
+            background-color: #fff8dc; /* Cornsilk */
+            cursor: pointer;
+        }
+
+        button {
+            background-color: #ffc107; /* Amber/Gold - beer color */
+            color: #5c3a0a;
+            font-weight: bold;
+            transition: transform 0.1s ease;
+        }
+
+        button:hover {
+            background-color: #e0a800; /* Darker amber */
+        }
+        
+        button:active {
+            transform: scale(0.95);
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+        }
+        
+        #phraseDisplay {
+            margin-top: 20px;
+            font-size: 1.3em;
+            color: #4a2c05;
+            font-weight: bold;
+            min-height: 30px; /* Reserve space */
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1><span class="logo-beer">🍺</span>Dos Cervezas<span class="logo-beer" style="transform: rotate(15deg) scaleX(-1);">🍻</span></h1>
+
+        <div class="control-group">
+            <label for="numBeers">Number of Beers:</label>
+            <select id="numBeers">
+                <!-- Options will be populated by JavaScript -->
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label for="country">Country:</label>
+            <select id="country">
+                <!-- Options will be populated by JavaScript -->
+            </select>
+        </div>
+
+        <button id="speakButton">Speak!</button>
+        
+        <div id="phraseDisplay"></div>
+    </div>
+
+    <script>
+        const numBeersSelect = document.getElementById('numBeers');
+        const countrySelect = document.getElementById('country');
+        const speakButton = document.getElementById('speakButton');
+        const phraseDisplay = document.getElementById('phraseDisplay');
+
+        // --- Language Data ---
+        // This structure handles number-to-word and pluralization internally
+  const translations = {
+            "Spain": { // Spanish
+                langCode: "es-ES",
+                numbers: {
+                    1: "una", 2: "dos", 3: "tres", 4: "cuatro", 5: "cinco",
+                    6: "seis", 7: "siete", 8: "ocho", 9: "nueve", 10: "diez"
+                },
+                beer_singular: "cerveza",
+                beer_plural: "cervezas",
+                please: "por favor",
+                getPhrase: function(count) {
+                    const numStr = this.numbers[count] || count.toString();
+                    const beerStr = count === 1 ? this.beer_singular : this.beer_plural;
+                    return `${numStr} ${beerStr} ${this.please}`;
+                }
+            },
+            "United Kingdom": { // English (GB)
+                langCode: "en-GB",
+                numbers: {
+                    1: "one", 2: "two", 3: "three", 4: "four", 5: "five",
+                    6: "six", 7: "seven", 8: "eight", 9: "nine", 10: "ten"
+                },
+                beer_singular: "beer",
+                beer_plural: "beers",
+                please: "please",
+                getPhrase: function(count) {
+                    const numStr = this.numbers[count] || count.toString();
+                    const beerStr = count === 1 ? this.beer_singular : this.beer_plural;
+                    return `${numStr} ${beerStr} ${this.please}`;
+                }
+            },
+            "USA": { // English (US)
+                langCode: "en-US",
+                numbers: {
+                    1: "one", 2: "two", 3: "three", 4: "four", 5: "five",
+                    6: "six", 7: "seven", 8: "eight", 9: "nine", 10: "ten"
+                },
+                beer_singular: "beer",
+                beer_plural: "beers",
+                please: "please",
+                getPhrase: function(count) {
+                    const numStr = this.numbers[count] || count.toString();
+                    const beerStr = count === 1 ? this.beer_singular : this.beer_plural;
+                    return `${numStr} ${beerStr} ${this.please}`;
+                }
+            },
+            "Germany": { // German
+                langCode: "de-DE",
+                numbers: {
+                    1: "ein", 2: "zwei", 3: "drei", 4: "vier", 5: "fünf",
+                    6: "sechs", 7: "sieben", 8: "acht", 9: "neun", 10: "zehn"
+                },
+                beer_singular: "Bier", // "ein Bier"
+                beer_plural: "Biere",  // "zwei Biere"
+                please: "bitte",
+                getPhrase: function(count) {
+                    const numStr = this.numbers[count] || count.toString();
+                    const beerStr = count === 1 ? this.beer_singular : this.beer_plural;
+                    return `${numStr} ${beerStr} ${this.please}`;
+                }
+            },
+            "France": { // French
+                langCode: "fr-FR",
+                numbers: {
+                    1: "une", 2: "deux", 3: "trois", 4: "quatre", 5: "cinq",
+                    6: "six", 7: "sept", 8: "huit", 9: "neuf", 10: "dix"
+                },
+                beer_singular: "bière",
+                beer_plural: "bières",
+                please: "s'il vous plaît",
+                getPhrase: function(count) {
+                    const numStr = this.numbers[count] || count.toString();
+                    const beerStr = count === 1 ? this.beer_singular : this.beer_plural;
+                    return `${numStr} ${beerStr} ${this.please}`;
+                }
+            },
+            "Italy": { // Italian
+                langCode: "it-IT",
+                numbers: {
+                    1: "una", 2: "due", 3: "tre", 4: "quattro", 5: "cinque",
+                    6: "sei", 7: "sette", 8: "otto", 9: "nove", 10: "dieci"
+                },
+                beer_singular: "birra",
+                beer_plural: "birre",
+                please: "per favore",
+                getPhrase: function(count) {
+                    const numStr = this.numbers[count] || count.toString();
+                    const beerStr = count === 1 ? this.beer_singular : this.beer_plural;
+                    return `${numStr} ${beerStr} ${this.please}`;
+                }
+            },
+            "Portugal": { // Portuguese (Portugal)
+                langCode: "pt-PT",
+                numbers: { // "cerveja" is feminine
+                    1: "uma", 2: "duas", 3: "três", 4: "quatro", 5: "cinco",
+                    6: "seis", 7: "sete", 8: "oito", 9: "nove", 10: "dez"
+                },
+                beer_singular: "cerveja",
+                beer_plural: "cervejas",
+                please: "por favor", // "se faz favor" also common
+                getPhrase: function(count) {
+                    const numStr = this.numbers[count] || count.toString();
+                    const beerStr = count === 1 ? this.beer_singular : this.beer_plural;
+                    return `${numStr} ${beerStr} ${this.please}`;
+                }
+            },
+            "Brazil": { // Portuguese (Brazil)
+                langCode: "pt-BR",
+                numbers: { // "cerveja" is feminine
+                    1: "uma", 2: "duas", 3: "três", 4: "quatro", 5: "cinco",
+                    6: "seis", 7: "sete", 8: "oito", 9: "nove", 10: "dez"
+                },
+                beer_singular: "cerveja",
+                beer_plural: "cervejas",
+                please: "por favor",
+                getPhrase: function(count) {
+                    const numStr = this.numbers[count] || count.toString();
+                    const beerStr = count === 1 ? this.beer_singular : this.beer_plural;
+                    return `${numStr} ${beerStr} ${this.please}`;
+                }
+            },
+            "Netherlands": { // Dutch
+                langCode: "nl-NL",
+                numbers: {
+                    1: "één", 2: "twee", 3: "drie", 4: "vier", 5: "vijf",
+                    6: "zes", 7: "zeven", 8: "acht", 9: "negen", 10: "tien"
+                },
+                beer_singular: "biertje", // Diminutive "biertje" is common
+                beer_plural: "biertjes",
+                please: "alstublieft", // Formal "alstublieft", informal "alsjeblieft"
+                getPhrase: function(count) {
+                    const numStr = this.numbers[count] || count.toString();
+                    const beerStr = count === 1 ? this.beer_singular : this.beer_plural;
+                    return `${numStr} ${beerStr} ${this.please}`;
+                }
+            },
+            "Japan": { // Japanese
+                langCode: "ja-JP",
+                // Numbers with counter 'hai' for cups/glasses. Pronunciation changes.
+                numbers_counter: {
+                    1: "一杯 ", 2: "二杯", 3: "三杯", 4: "四杯",
+                    5: "五杯 ", 6: "六杯", 7: "七杯",
+                    8: "八杯", 9: "九杯 (kyūhai)", 10: "十杯"
+                },
+                beer_word: "ビールを", // Beer (object)
+                please: "ください ", // Please (give me)
+                getPhrase: function(count) {
+                    const numCounterStr = this.numbers_counter[count] || (count.toString() + "杯");
+                    return `${this.beer_word} ${numCounterStr} ${this.please}`;
+                }
+            },
+            "South Korea": { // Korean
+                langCode: "ko-KR",
+                // Numbers with counter 'jan' for glasses/cups.
+                numbers_counter: {
+                    1: "한 잔 ", 2: "두 잔 ", 3: "세 잔 ", 4: "네 잔 ",
+                    5: "다섯 잔 ", 6: "여섯 잔 ", 7: "일곱 잔 ",
+                    8: "여덟 잔 ", 9: "아홉 잔 ", 10: "열 잔 "
+                },
+                beer_word: "맥주 ", // Beer
+                please: "주세요 ", // Please give
+                getPhrase: function(count) {
+                    const numCounterStr = this.numbers_counter[count] || (count.toString() + " 잔");
+                    return `${this.beer_word} ${numCounterStr} ${this.please}`;
+                }
+            },
+            "China": { // Mandarin Chinese
+                langCode: "zh-CN",
+                // Numbers with counter 'bēi' for cup/glass. 'liǎng' for two.
+                numbers_counter: {
+                    1: "一杯 ", 2: "两杯 ", 3: "三杯 ", 4: "四杯 ",
+                    5: "五杯 ", 6: "六杯 ", 7: "七杯 ",
+                    8: "八杯 ", 9: "九杯 ", 10: "十杯 "
+                },
+                beer_word: "啤酒 ", // Beer
+                please: "，请 ", // , please (qǐng can also mean 'invite' or 'request')
+                getPhrase: function(count) {
+                    const numCounterStr = this.numbers_counter[count] || (count.toString() + "杯");
+                    // Structure: [Number+Counter] [Beer], [Please]
+                    return `${numCounterStr} ${this.beer_word}${this.please}`;
+                }
+            },
+            "Russia": { // Russian
+                langCode: "ru-RU",
+                numbers: { // Nominative case for numbers
+                    1: "одно", // for "пиво" (neuter)
+                    2: "два",  // for "пиво" (neuter)
+                    3: "три", 4: "четыре", 5: "пять", 6: "шесть",
+                    7: "семь", 8: "восемь", 9: "девять", 10: "десять"
+                },
+                // Russian grammar for nouns after numerals is complex.
+                // 1: nominative singular (пиво)
+                // 2-4: genitive singular (пива)
+                // 5+: genitive plural (пив)
+                beer_form: function(count) {
+                    if (count === 1) return "пиво"; // odno pivo
+                    if (count >= 2 && count <= 4) return "пива"; // dva piva
+                    return "пив"; // pyat' piv
+                },
+                please: "пожалуйста ",
+                getPhrase: function(count) {
+                    const numStr = this.numbers[count] || count.toString();
+                    const beerStr = this.beer_form(count);
+                    return `${numStr} ${beerStr} ${this.please}`;
+                }
+            },
+            "Sweden": { // Swedish
+                langCode: "sv-SE",
+                numbers: { // 'en' for 'öl' (common gender)
+                    1: "en", 2: "två", 3: "tre", 4: "fyra", 5: "fem",
+                    6: "sex", 7: "sju", 8: "åtta", 9: "nio", 10: "tio"
+                },
+                beer_word: "öl", // Singular 'öl' often used for plural quantity
+                please: "tack", // "Thanks" often used as "please" in this context
+                getPhrase: function(count) {
+                    const numStr = this.numbers[count] || count.toString();
+                    return `${numStr} ${this.beer_word}, ${this.please}`;
+                }
+            },
+            "Norway": { // Norwegian (Bokmål)
+                langCode: "nb-NO",
+                numbers: { // 'en' for 'øl' (masculine)
+                    1: "en", 2: "to", 3: "tre", 4: "fire", 5: "fem",
+                    6: "seks", 7: "sju", 8: "åtte", 9: "ni", 10: "ti"
+                },
+                beer_word: "øl", // Singular 'øl' often used for plural quantity
+                please: "takk",
+                getPhrase: function(count) {
+                    const numStr = this.numbers[count] || count.toString();
+                    return `${numStr} ${this.beer_word}, ${this.please}`;
+                }
+            },
+            "Denmark": { // Danish
+                langCode: "da-DK",
+                numbers: { // 'en' for 'øl' (common gender)
+                    1: "en", 2: "to", 3: "tre", 4: "fire", 5: "fem",
+                    6: "seks", 7: "syv", 8: "otte", 9: "ni", 10: "ti"
+                },
+                beer_word: "øl", // Singular 'øl' often used for plural quantity
+                please: "tak",
+                getPhrase: function(count) {
+                    const numStr = this.numbers[count] || count.toString();
+                    return `${numStr} ${this.beer_word}, ${this.please}`;
+                }
+            },
+            "Finland": { // Finnish
+                langCode: "fi-FI",
+                numbers: {
+                    1: "yksi", 2: "kaksi", 3: "kolme", 4: "neljä", 5: "viisi",
+                    6: "kuusi", 7: "seitsemän", 8: "kahdeksan", 9: "yhdeksän", 10: "kymmenen"
+                },
+                // Noun case changes: 1 olut (nominative), 2+ olutta (partitive)
+                beer_form: function(count) {
+                    return count === 1 ? "olut" : "olutta";
+                },
+                please: "kiitos", // "Thanks" also used as "please"
+                getPhrase: function(count) {
+                    const numStr = this.numbers[count] || count.toString();
+                    const beerStr = this.beer_form(count);
+                    return `${numStr} ${beerStr}, ${this.please}`;
+                }
+            },
+            "Poland": { // Polish
+                langCode: "pl-PL",
+                numbers: { // "jedno" for "piwo" (neuter)
+                    1: "jedno", 2: "dwa", 3: "trzy", 4: "cztery", 5: "pięć",
+                    6: "sześć", 7: "siedem", 8: "osiem", 9: "dziewięć", 10: "dziesięć"
+                },
+                // Noun case changes: 1 piwo; 2,3,4 piwa; 5+ piw
+                beer_form: function(count) {
+                    if (count === 1) return "piwo";
+                    if (count >= 2 && count <= 4) return "piwa";
+                    return "piw";
+                },
+                please: "proszę",
+                getPhrase: function(count) {
+                    const numStr = this.numbers[count] || count.toString();
+                    const beerStr = this.beer_form(count);
+                    return `${numStr} ${beerStr} ${this.please}`;
+                }
+            },
+            "Czech Republic": { // Czech
+                langCode: "cs-CZ",
+                numbers: { // "jedno" for "pivo" (neuter), "dvě" for 2 pivo
+                    1: "jedno", 2: "dvě", 3: "tři", 4: "čtyři", 5: "pět",
+                    6: "šest", 7: "sedm", 8: "osm", 9: "devět", 10: "deset"
+                },
+                // Noun case changes: 1 pivo; 2,3,4 piva; 5+ piv
+                beer_form: function(count) {
+                    if (count === 1) return "pivo";
+                    if (count >= 2 && count <= 4) return "piva";
+                    return "piv";
+                },
+                please: "prosím",
+                getPhrase: function(count) {
+                    const numStr = this.numbers[count] || count.toString();
+                    const beerStr = this.beer_form(count);
+                    return `${numStr} ${beerStr} ${this.please}`;
+                }
+            },
+            "Greece": { // Greek
+                langCode: "el-GR",
+                numbers: { // "μία" for "μπύρα" (feminine)
+                    1: "μία", 2: "δύο", 3: "τρεις", 4: "τέσσερις", 5: "πέντε",
+                    6: "έξι", 7: "επτά", 8: "οκτώ", 9: "εννέα", 10: "δέκα"
+                },
+                beer_singular: "μπύρα ",
+                beer_plural: "μπύρες ",
+                please: "παρακαλώ ",
+                getPhrase: function(count) {
+                    const numStr = this.numbers[count] || count.toString();
+                    const beerStr = count === 1 ? this.beer_singular : this.beer_plural;
+                    return `${numStr} ${beerStr} ${this.please}`;
+                }
+            },
+            "Turkey": { // Turkish
+                langCode: "tr-TR",
+                numbers: {
+                    1: "bir", 2: "iki", 3: "üç", 4: "dört", 5: "beş",
+                    6: "altı", 7: "yedi", 8: "sekiz", 9: "dokuz", 10: "on"
+                },
+                beer_word: "bira", // Singular noun used with numbers
+                please: "lütfen",
+                getPhrase: function(count) {
+                    const numStr = this.numbers[count] || count.toString();
+                    return `${numStr} ${this.beer_word} ${this.please}`;
+                }
+            },
+            "India": { // Hindi
+                langCode: "hi-IN",
+                numbers: {
+                    1: "एक ", 2: "दो ", 3: "तीन ", 4: "चार ", 5: "पाँच ",
+                    6: "छह ", 7: "सात ", 8: "आठ ", 9: "नौ ", 10: "दस "
+                },
+                beer_word: "बीयर", // Loanword, singular often used
+                please: "कृपया ",
+                getPhrase: function(count) {
+                    const numStr = this.numbers[count] || count.toString();
+                    return `${numStr} ${this.beer_word} ${this.please}`;
+                }
+            },
+            "Thailand": { // Thai
+                langCode: "th-TH",
+                numbers: {
+                    1: "หนึ่ง ", 2: "สอง ", 3: "สาม ", 4: "สี่ ", 5: "ห้า ",
+                    6: "หก ", 7: "เจ็ด ", 8: "แปด ", 9: "เก้า ", 10: "สิบ "
+                },
+                beer_word: "เบียร์ ",
+                classifier: "แก้ว ", // Glass/cup classifier
+                please_polite_particle: "ครับ ", //ครับ (male) / ค่ะ (female)
+                getPhrase: function(count) {
+                    // Structure: Beer [Number] Classifier [Politeness Particle]
+                    // Or simpler for ordering: I'd like beer, X glasses: ขอเบียร์ X แก้ว ครับ/ค่ะ
+                    // Let's use: "Beer X glass please" -> เบียร์ [Number] แก้ว ครับ/ค่ะ
+                    const numStr = this.numbers[count] || count.toString();
+                    return `${this.beer_word} ${numStr} ${this.classifier} ${this.please_polite_particle}`;
+                }
+            },
+            "Vietnam": { // Vietnamese
+                langCode: "vi-VN",
+                numbers: {
+                    1: "một", 2: "hai", 3: "ba", 4: "bốn", 5: "năm",
+                    6: "sáu", 7: "bảy", 8: "tám", 9: "chín", 10: "mười"
+                },
+                beer_word: "bia",
+                classifier: "ly", // ly (glass) or chai (bottle)
+                // Phrase: Cho tôi [Number] [Classifier] [Item] -> Give me X glasses of beer
+                // Or: [Number] [Classifier] [Item], làm ơn (please)
+                prefix: "Cho tôi", // "Give me"
+                getPhrase: function(count) {
+                    const numStr = this.numbers[count] || count.toString();
+                    return `${this.prefix} ${numStr} ${this.classifier} ${this.beer_word}`;
+                }
+            },
+            "Indonesia": { // Indonesian
+                langCode: "id-ID",
+                numbers: {
+                    1: "satu", 2: "dua", 3: "tiga", 4: "empat", 5: "lima",
+                    6: "enam", 7: "tujuh", 8: "delapan", 9: "sembilan", 10: "sepuluh"
+                },
+                beer_word: "bir",
+                // Phrase: Minta [Number] [Item] -> Ask for X beers
+                prefix: "Minta", // "Ask for"
+                getPhrase: function(count) {
+                    const numStr = this.numbers[count] || count.toString();
+                    return `${this.prefix} ${numStr} ${this.beer_word}`;
+                }
+            },
+            "Saudi Arabia": { // Arabic (MSA)
+                langCode: "ar-SA", // Modern Standard Arabic, often used as default
+                // Numbers for feminine "bīrah" (beer). This is simplified.
+                // 1: wāḥidah (one F), 2: ithnatayn (two F accusative/genitive)
+                // 3-10: number has opposite gender to counted noun (which is plural)
+                // For simplicity, using common spoken forms or direct number + singular noun.
+                // "Urīdu [number] bīrah min faḍlik" (I want X beer please)
+                numbers: {
+                    1: "واحدة ", 2: "اثنتين ", 3: "ثلاث (", 4: "أربع", 5: "خمس ",
+                    6: "ست ", 7: "سبع", 8: "ثماني ", 9: "تسع ", 10: "عشر "
+                },
+                i_want: "أريد ", // I want
+                beer_word: "بيرة ", // beer (singular used colloquially with numbers)
+                please: "من فضلك ", // please (addressing male/generic)
+                getPhrase: function(count) {
+                    const numStr = this.numbers[count] || count.toString();
+                    return `${this.i_want} ${numStr} ${this.beer_word} ${this.please}`;
+                }
+            },
+            "Israel": { // Hebrew
+                langCode: "he-IL",
+                // Numbers are feminine to agree with "בִּירָה" (bíra - beer, feminine)
+                // For 1: בירה אחת (bíra achát - beer one)
+                // For 2: שתי בירות (shtéi bírot - two beers, construct state) - simplified to shtayim birot
+                // For 3+: [number] בירות ([number] bírot - X beers)
+                numbers_feminine: {
+                    1: "אַחַת ", 2: "שְׁתַּיִם ", 3: "שָׁלֹשׁ ", 4: "אַרְבַּע ",
+                    5: "חָמֵשׁ ", 6: "שֵׁשׁ ", 7: "שֶׁבַע ",
+                    8: "שְׁמוֹנֶה ", 9: "תֵּשַׁע ", 10: "עֶשֶׂר "
+                },
+                beer_singular: "בִּירָה ",
+                beer_plural: "בִּירוֹת ",
+                please: "בְּבַקָּשָׁה ",
+                getPhrase: function(count) {
+                    if (count === 1) {
+                        return `${this.beer_singular} ${this.numbers_feminine[1]} ${this.please}`;
+                    }
+                    const numStr = this.numbers_feminine[count] || count.toString();
+                    // Using plural "birot" for 2 and more. shtayim birot is understandable.
+                    return `${numStr} ${this.beer_plural} ${this.please}`;
+                }
+            }
+            // Add more languages here following the same pattern
+        };
+        // --- Populate Dropdowns ---
+        function populateNumberDropdown() {
+            for (let i = 1; i <= 10; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = i;
+                if (i === 2) { // Default to 2
+                    option.selected = true;
+                }
+                numBeersSelect.appendChild(option);
+            }
+        }
+
+        function populateCountryDropdown() {
+            for (const countryName in translations) {
+                const option = document.createElement('option');
+                option.value = countryName;
+                option.textContent = countryName;
+                if (countryName === "Spain") { // Default to Spain
+                    option.selected = true;
+                }
+                countrySelect.appendChild(option);
+            }
+        }
+
+        // --- Speech Synthesis ---
+        function speakPhrase() {
+            const numBeers = parseInt(numBeersSelect.value);
+            const selectedCountry = countrySelect.value;
+
+            if (translations[selectedCountry] && 'speechSynthesis' in window) {
+                const languageData = translations[selectedCountry];
+                const phrase = languageData.getPhrase(numBeers);
+                
+                phraseDisplay.textContent = `"${phrase}"`; // Show the phrase on screen
+
+                const utterance = new SpeechSynthesisUtterance(phrase);
+                utterance.lang = languageData.langCode;
+                
+                // Optional: Try to find a specific voice if available
+                const voices = window.speechSynthesis.getVoices();
+                const specificVoice = voices.find(voice => voice.lang === languageData.langCode);
+                if (specificVoice) {
+                    utterance.voice = specificVoice;
+                }
+                
+                window.speechSynthesis.speak(utterance);
+
+            } else if (!('speechSynthesis' in window)) {
+                phraseDisplay.textContent = "Sorry, your browser doesn't support speech synthesis.";
+                alert("Sorry, your browser doesn't support speech synthesis.");
+            } else {
+                phraseDisplay.textContent = "Language not configured.";
+                alert("Language not configured for the selected country.");
+            }
+        }
+
+        // --- Event Listeners ---
+        speakButton.addEventListener('click', speakPhrase);
+
+        // --- Initialization ---
+        populateNumberDropdown();
+        populateCountryDropdown();
+        
+        // Speech synthesis voices are loaded asynchronously.
+        // It's good practice to populate voice list dependent features after voiceschanged event.
+        // However, for setting just utterance.lang, it usually works without waiting.
+        // If specific voice selection is critical, uncomment the following:
+        /*
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.onvoiceschanged = function() {
+                // This ensures voices are loaded if we want to pick a specific one by name
+                // For now, just setting utterance.lang is often sufficient.
+                console.log("Voices loaded.");
+            };
+        }
+        */
+
+    </script>
+
+</body>
+</html>
