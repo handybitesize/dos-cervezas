@@ -2,67 +2,77 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
     <title>Dos Cervezas</title>
     <style>
         body {
             font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', sans-serif;
-            background-color: #f0e68c; /* Khaki - a light pub-like wood color */
+            background-color: #f0e68c; /* Khaki */
             color: #5c3a0a; /* Dark brown */
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start; /* Align to top on mobile, allow scrolling */
             min-height: 100vh;
             margin: 0;
-            padding: 20px;
+            padding: 15px; /* Reduced padding for smaller screens */
             box-sizing: border-box;
         }
 
         .container {
-            background-color: #d2b48c; /* Tan - another wood shade */
-            padding: 30px;
+            background-color: #d2b48c; /* Tan */
+            padding: 20px; /* Adjusted padding */
             border-radius: 15px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2), 0 0 0 10px #8b4513; /* Dark brown border */
-            border: 5px solid #saddlebrown; /* A slightly lighter brown for inner border */
+            box-shadow: 0 8px 15px rgba(0,0,0,0.2), 0 0 0 8px #8b4513; /* Slightly reduced shadow for mobile */
+            border: 3px solid #saddlebrown;
             text-align: center;
+            width: 100%; /* Take full available width */
+            max-width: 450px; /* Max width for larger mobile / small tablets */
+            box-sizing: border-box;
         }
 
         h1 {
-            font-size: 3em;
+            font-size: clamp(2em, 8vw, 3em); /* Responsive font size: min, preferred, max */
             color: #800000; /* Maroon/Burgundy */
-            text-shadow: 2px 2px #ffffff; /* White text shadow for pop */
+            text-shadow: 1px 1px #ffffff; /* Slightly reduced shadow */
+            margin-top: 0;
             margin-bottom: 20px;
         }
         
         .logo-beer {
-            font-size: 2em; /* Adjust as needed */
+            font-size: 0.8em; /* Relative to H1's dynamic size */
             display: inline-block;
-            margin-right: 10px;
-            transform: rotate(-15deg); /* Tilt the beer mug */
+            margin-right: 5px;
+            transform: rotate(-15deg);
         }
 
         label {
-            font-size: 1.2em;
-            margin-right: 10px;
+            font-size: clamp(1em, 4vw, 1.2em); /* Responsive font size */
+            display: block; /* Stack above the select */
+            margin-bottom: 5px;
+            text-align: left; /* Align label text to the left */
         }
 
         select, button {
             font-family: inherit;
-            font-size: 1.1em;
-            padding: 10px 15px;
-            margin: 10px 5px;
+            font-size: clamp(1em, 4.5vw, 1.1em); /* Responsive font size */
+            padding: 12px 15px; /* Good tap target size */
+            margin-top: 5px; /* Space from label */
+            margin-bottom: 15px; /* Space before next control group or button */
             border-radius: 8px;
             border: 2px solid #5c3a0a;
             background-color: #fff8dc; /* Cornsilk */
             cursor: pointer;
+            width: 100%; /* Make them full width */
+            box-sizing: border-box; /* Include padding and border in width */
         }
 
         button {
-            background-color: #ffc107; /* Amber/Gold - beer color */
+            background-color: #ffc107; /* Amber/Gold */
             color: #5c3a0a;
             font-weight: bold;
-            transition: transform 0.1s ease;
+            transition: transform 0.1s ease, background-color 0.2s ease;
+            margin-top: 10px; /* More space before the button */
         }
 
         button:hover {
@@ -70,39 +80,75 @@
         }
         
         button:active {
-            transform: scale(0.95);
+            transform: scale(0.97); /* Slightly larger active scale */
         }
 
         .control-group {
-            margin-bottom: 20px;
+            margin-bottom: 10px; /* Space between control groups */
         }
         
         #phraseDisplay {
             margin-top: 20px;
-            font-size: 1.3em;
+            font-size: clamp(1.1em, 5vw, 1.3em); /* Responsive font size */
             color: #4a2c05;
             font-weight: bold;
-            min-height: 30px; /* Reserve space */
+            min-height: 40px; /* Reserve a bit more space */
+            overflow-wrap: break-word; /* Prevent long phrases from breaking layout */
+            word-wrap: break-word; /* Older browsers */
+            line-height: 1.4;
         }
+
+        /* Optional: For slightly larger screens, we could revert some stacking if desired,
+           but for this app, vertical stacking works well universally.
+        @media (min-width: 600px) {
+            .container {
+                padding: 30px;
+            }
+            h1 {
+                 font-size: 3em;
+            }
+            .logo-beer {
+                font-size: 1em;
+            }
+            label {
+                display: inline-block; 
+                text-align: right;
+                margin-right: 10px;
+                margin-bottom: 0;
+                width: auto;
+            }
+            select {
+                width: auto; 
+                min-width: 150px; 
+                display: inline-block;
+            }
+            .control-group {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-bottom: 20px;
+            }
+        }
+        */
 
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1><span class="logo-beer">🍺</span>Dos Cervezas<span class="logo-beer" style="transform: rotate(15deg) scaleX(-1);">🍻</span></h1>
+        <h1><span class="logo-beer">🍺</span>Dos Cervezas<span class="logo-beer" style="transform: rotate(15deg) scaleX(-1); margin-left:5px; margin-right:0;">🍻</span></h1>
 
         <div class="control-group">
             <label for="numBeers">Number of Beers:</label>
             <select id="numBeers">
-                <!-- Options will be populated by JavaScript -->
+                {/* Options populated by JS */}
             </select>
         </div>
 
         <div class="control-group">
             <label for="country">Country:</label>
             <select id="country">
-                <!-- Options will be populated by JavaScript -->
+                {/* Options populated by JS */}
             </select>
         </div>
 
@@ -117,8 +163,7 @@
         const speakButton = document.getElementById('speakButton');
         const phraseDisplay = document.getElementById('phraseDisplay');
 
-        // --- Language Data ---
-        // This structure handles number-to-word and pluralization internally
+        // --- Language Data (using the large one from previous step) ---
   const translations = {
             "Spain": { // Spanish
                 langCode: "es-ES",
@@ -551,6 +596,7 @@
             }
             // Add more languages here following the same pattern
         };
+
         // --- Populate Dropdowns ---
         function populateNumberDropdown() {
             for (let i = 1; i <= 10; i++) {
@@ -565,7 +611,10 @@
         }
 
         function populateCountryDropdown() {
-            for (const countryName in translations) {
+            // Sort countries alphabetically for better UX
+            const sortedCountries = Object.keys(translations).sort((a, b) => a.localeCompare(b));
+
+            sortedCountries.forEach(countryName => {
                 const option = document.createElement('option');
                 option.value = countryName;
                 option.textContent = countryName;
@@ -573,7 +622,7 @@
                     option.selected = true;
                 }
                 countrySelect.appendChild(option);
-            }
+            });
         }
 
         // --- Speech Synthesis ---
@@ -585,12 +634,11 @@
                 const languageData = translations[selectedCountry];
                 const phrase = languageData.getPhrase(numBeers);
                 
-                phraseDisplay.textContent = `"${phrase}"`; // Show the phrase on screen
+                phraseDisplay.textContent = `"${phrase}"`;
 
                 const utterance = new SpeechSynthesisUtterance(phrase);
                 utterance.lang = languageData.langCode;
                 
-                // Optional: Try to find a specific voice if available
                 const voices = window.speechSynthesis.getVoices();
                 const specificVoice = voices.find(voice => voice.lang === languageData.langCode);
                 if (specificVoice) {
@@ -612,22 +660,18 @@
         speakButton.addEventListener('click', speakPhrase);
 
         // --- Initialization ---
-        populateNumberDropdown();
-        populateCountryDropdown();
-        
-        // Speech synthesis voices are loaded asynchronously.
         // It's good practice to populate voice list dependent features after voiceschanged event.
-        // However, for setting just utterance.lang, it usually works without waiting.
-        // If specific voice selection is critical, uncomment the following:
-        /*
-        if ('speechSynthesis' in window) {
-            window.speechSynthesis.onvoiceschanged = function() {
-                // This ensures voices are loaded if we want to pick a specific one by name
-                // For now, just setting utterance.lang is often sufficient.
-                console.log("Voices loaded.");
+        // For just setting utterance.lang, it usually works. If specific voice selection (utterance.voice)
+        // is critical and doesn't work reliably, ensure getVoices() is called after 'voiceschanged'.
+        if ('speechSynthesis' in window && window.speechSynthesis.onvoiceschanged !== undefined) {
+            window.speechSynthesis.onvoiceschanged = () => {
+                // Voices are loaded, specific voice selection in speakPhrase will be more reliable.
+                // console.log("Voices loaded via onvoiceschanged.");
             };
         }
-        */
+        
+        populateNumberDropdown();
+        populateCountryDropdown();
 
     </script>
 
