@@ -595,6 +595,48 @@
                     // Using plural "birot" for 2 and more. shtayim birot is understandable.
                     return `${numStr} ${this.beer_plural} ${this.please}`;
                 }
+            },
+                      "Wales": { // Welsh (Cymraeg)
+                langCode: "cy-GB", // Using GB variant
+                numbers: {
+                    1: "un", 2: "dau", 3: "tri", 4: "pedwar", 5: "pum", // pum is 'pump' before noun
+                    6: "chwe", // chwe is 'chwech' before noun
+                    7: "saith", 8: "wyth", 9: "naw", 10: "deg"
+                },
+                beer_word_base: "cwrw",
+                please: "os gwelwch yn dda",
+                getPhrase: function(count) {
+                    const numStr = this.numbers[count] || count.toString();
+                    let beerStr = this.beer_word_base;
+                    if (count === 2) { // dau (masc) causes soft mutation c -> g
+                        beerStr = "gwrw";
+                    } else if (count === 3) { // tri (masc) causes aspirate mutation c -> ch
+                        beerStr = "chwrw";
+                    }
+                    // Note: 'un' can cause soft mutation if the noun is feminine. 'cwrw' is masculine.
+                    // 'pedwar' can cause soft mutation to feminine nouns.
+                    // 'pum', 'chwe' are already modified forms of 'pump', 'chwech'.
+                    return `${numStr} ${beerStr} ${this.please}`;
+                }
+            },
+            "Slovenia": { // Slovenian (Slovenščina)
+                langCode: "sl-SI",
+                numbers: { // Neuter forms where applicable for 'pivo'
+                    1: "eno", 2: "dve", 3: "tri", 4: "štiri", 5: "pet",
+                    6: "šest", 7: "sedem", 8: "osem", 9: "devet", 10: "deset"
+                },
+                beer_form: function(count) {
+                    if (count === 1) return "pivo";  // singular nominative
+                    if (count === 2) return "pivi";  // dual nominative
+                    if (count === 3 || count === 4) return "piva"; // plural nominative (for 3,4)
+                    return "piv"; // plural genitive (for 5+)
+                },
+                please: "prosim",
+                getPhrase: function(count) {
+                    const numStr = this.numbers[count] || count.toString();
+                    const beerStr = this.beer_form(count);
+                    return `${numStr} ${beerStr} ${this.please}`;
+                }
             }
             // Add more languages here following the same pattern
         };
